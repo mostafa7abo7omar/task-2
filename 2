@@ -1,0 +1,104 @@
+def linear_search(prices):
+    min_price = prices[0]
+    buy_day = 0
+    max_profit = 0
+    best_buy = 0
+    best_sell = 0
+
+    for i in range(1, len(prices)):
+        profit = prices[i] - min_price
+
+        if profit > max_profit:
+            max_profit = profit
+            best_buy = buy_day
+            best_sell = i
+
+        if prices[i] < min_price:
+            min_price = prices[i]
+            buy_day = i
+
+    return max_profit, best_buy, best_sell
+
+
+def max_crossing(prices, low, mid, high):
+    left_sum = float("-inf")
+    total = 0
+    left = mid
+
+    for i in range(mid, low - 1, -1):
+        total += prices[i]
+        if total > left_sum:
+            left_sum = total
+            left = i
+
+    right_sum = float("-inf")
+    total = 0
+    right = mid + 1
+
+    for i in range(mid + 1, high + 1):
+        total += prices[i]
+        if total > right_sum:
+            right_sum = total
+            right = i
+
+    return left, right, left_sum + right_sum
+
+
+def divide_conquer(prices, low, high):
+    if low == high:
+        return low, high, prices[low]
+
+    mid = (low + high) // 2
+
+    left = divide_conquer(prices, low, mid)
+    right = divide_conquer(prices, mid + 1, high)
+    cross = max_crossing(prices, low, mid, high)
+
+    if left[2] >= right[2] and left[2] >= cross[2]:
+        return left
+
+    if right[2] >= left[2] and right[2] >= cross[2]:
+        return right
+
+    return cross
+
+
+def divide_max_profit(prices):
+    changes = []
+
+    for i in range(1, len(prices)):
+        changes.append(prices[i] - prices[i - 1])
+
+    if not changes:
+        return 0, 0, 0
+
+    start, end, profit = divide_conquer(
+        changes, 0, len(changes) - 1
+    )
+
+    if profit <= 0:
+        return 0, 0, 0
+
+    return profit, start, end + 1
+
+
+prices = [100, 105, 98, 110, 120, 115, 130, 125]
+
+profit1, buy1, sell1 = divide_max_profit(prices)
+profit2, buy2, sell2 = linear_search(prices)
+
+print("Stock Prices:", prices)
+
+print("\nDivide and Conquer:")
+print("Maximum Profit:", profit1)
+print("Buy Day:", buy1 + 1)
+print("Sell Day:", sell1 + 1)
+
+print("\nLinear Search:")
+print("Maximum Profit:", profit2)
+print("Buy Day:", buy2 + 1)
+print("Sell Day:", sell2 + 1)
+
+print("\nBoth algorithms give the same result:",
+      profit1 == profit2)
+```
